@@ -1,6 +1,5 @@
 #include "record.h"
 
-
 class list_node : public record
 {
 

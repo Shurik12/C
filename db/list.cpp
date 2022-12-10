@@ -1,7 +1,4 @@
 #include "list.h"
-#include <string.h>
-#include <stdlib.h>
-//#include <windows.h>
 
 list :: list() {
 	int i;
@@ -33,7 +30,7 @@ void list :: print() {
     tmp -> print();
 }
 
-int list :: read(FILE* fp) {
+int list :: read(std::ifstream& fp) {
     list_node* tmp = 0;
     list_node* last = 0;
 

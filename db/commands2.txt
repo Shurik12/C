@@ -70,4 +70,3 @@ select * where phone = 7654321;
 select * where group = 208;
 select * where group = 209;
 quit;
-

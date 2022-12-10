@@ -1,25 +1,13 @@
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <stdio.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <string.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <sys/shm.h>
+#include "client.h"
 
-#include "command.h"
-
-#define MYPORT  7000
-#define BUF_LEN 1024
+using namespace std;
 
 int main()
 {
-    int i, j, k;
+    int i, j, k, buff_len = 1024;
     const char* file = "commands2.txt";
+    ifstream fp ("b.txt");
 
-    FILE * fp;
     /// Define sockfd
     int sock_cli = socket(AF_INET, SOCK_STREAM, 0);
     /// Define sockaddr_in
@@ -35,29 +23,29 @@ int main()
         exit(1);
     }
 
-    char sendbuf[BUF_LEN];
-    char recvbuf[BUF_LEN];
+    char sendbuf[buff_len];
+    char recvbuf[buff_len];
 
     // open file
-    if (!(fp = fopen(file,"r"))) {
-	    printf("Cannot open file\n");
+    if (!(fp.is_open())) {
+	    cout << "Cannot open file\n";
 	    return -1;
 	}
 
-    while (fgets(sendbuf, BUF_LEN, fp)) {
+    while (fp.getline(sendbuf, buff_len)) {
         for (j = 0; sendbuf[j]; j++) {
             if (sendbuf[j] == '\n') {
                 sendbuf[j] = 0;
                 break;
             }
         }
-        printf("%s\n", sendbuf);
+        cout << "Request to server: " << sendbuf << "\n";
         send(sock_cli, sendbuf, strlen(sendbuf), 0); /// Send
-        recv(sock_cli, recvbuf, sizeof(recvbuf),0); /// Receiving
-        fputs(recvbuf, stdout);
+        recv(sock_cli, recvbuf, sizeof(recvbuf), 0); /// Receiving
+        cout << "Answer from server: " << recvbuf << "\n";
+
         memset(sendbuf, 0, sizeof(sendbuf));
-        memset(recvbuf, 0, sizeof(recvbuf));
-        scanf("%d", &k);
+        memset(recvbuf, 0, sizeof(recvbuf));        
     }
     close(sock_cli);
     return 0;

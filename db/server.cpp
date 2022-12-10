@@ -1,64 +1,48 @@
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <stdio.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <string.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <sys/shm.h>
-#include <thread>
-#include <iostream>
+#include "server.h"
 
-#include "command.h"
-
-#define PORT 7000
-#define QUEUE 20
-#define BUFFLEN 1024
-
-int conn;
-void thread_task() {
-}
+using namespace std;
 
 int main() {
 
-    //printf("%d\n",AF_INET);
-    //printf("%d\n",SOCK_STREAM);
+    int conn;
+    char buffer[1024];
+    ifstream fp ("b.txt");
 
-    const char* file = "b.txt";
-    char answer[BUFFLEN];
-    FILE * fp;
-
-    int i, j, k, res = 0, ss = socket(AF_INET, SOCK_STREAM, 0);
-    char buffer[BUFFLEN];
+    int res = 0;
+    int ss = socket(AF_INET, SOCK_STREAM, 0);
     list* l = new list();
 
-    if (!(fp = fopen(file,"r"))) {
-	    printf("Cannot open file\n");
+    if (!(fp.is_open())) {
+	    cout << "Cannot open file\n";
 	    return -1;
 	}
     if (!(l -> read(fp))) {
-		fclose(fp);
-        printf("Cannot read file\n");
+		fp.close();
+        cout << "Cannot read file\n";
         return -2;
 	}
-    fclose(fp);
+    fp.close();
+    cout << "Read from file.\n";
 
     // printf("%d\n",ss);
     struct sockaddr_in server_sockaddr, client_addr; // declare structure for server and client
-
     server_sockaddr.sin_family = AF_INET;
     server_sockaddr.sin_port = htons(PORT); // htons - host-to-network
     server_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
     if (bind(ss, (struct sockaddr* ) &server_sockaddr, sizeof(server_sockaddr)) == -1) {
         perror("bind");
-        exit(1);
+        delete l;
+        close(conn);
+        close(ss);
+        return -3;
     }
     if(listen(ss, QUEUE) == -1) {
         perror("listen");
-        exit(1);
+        delete l;
+        close(conn);
+        close(ss);
+        return -4;
     }
 
     socklen_t length = sizeof(client_addr);
@@ -66,43 +50,35 @@ int main() {
     conn = accept(ss, (struct sockaddr*) &client_addr, &length);
     if( conn < 0 ) {
         perror("connect");
-        exit(1);
+        delete l;
+        close(conn);
+        close(ss);
+        return -3;
     }
 
-    //Create another thread
-    //std::thread t(thread_task);
-    //t.join();
-    //char buf[1024];
-    //Main thread
-    // scanf("%d", &k);
     while (true) {
-
-        // memset(buf, 0 ,sizeof(buf));
-        // if(fgets(buf, sizeof(buf),stdin) != NULL) {
-        //     send(conn, buf, sizeof(buf), 0);    
-        // }
 
         memset(buffer, 0, sizeof(buffer)); // заполняем память нулями
         int len = recv(conn, buffer, sizeof(buffer), 0); // get data from socket and put them to buffer
-        for (j=0; buffer[j]; j++) {
+        for (int j=0; buffer[j]; j++) {
           if (buffer[j] == '\n') {
-            printf("%c\n", buffer[j]);
+            cout << "\n";
             buffer[j] = 0;
             break;
           }
         }
-        printf("Got command: %s\n", buffer);
+        cout << "Got command: " << buffer << "\n";
 
         command *c = new command(); // initialize new object: command
         if ((c -> init(buffer)) < 0) {
-            printf("Syntax error!\n");
+            cout << "Syntax error!\n";
         }
         res = c -> apply( l );
         delete c;
 
         if (res) break;
-        sprintf(answer, "Command \"%s\" is executed.", buffer);
-        send(conn, answer, len , 0);
+        // sprintf(answer, "Command \"%s\" is executed.", buffer);
+        send(conn, buffer, len , 0);
     }
     delete l;
     close(conn);

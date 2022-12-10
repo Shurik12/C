@@ -1,13 +1,13 @@
-#include <stdio.h>
-#include <string.h>
 #include "record.h"
 
 int record :: init(const char* in, int ip, int ig) {
 	phone = ip;
 	group = ig;
 	if (in) {
-		name = new char[strlen(in) + 1];
-		if (name) { strcpy(name, in);}
+		name = new char[std::strlen(in) + 1];
+		if (name) { 
+			std::strcpy(name, in);
+		}
 	}
 	else {
 		name = 0;
@@ -41,17 +41,18 @@ void record :: print() {
 	   printf("%s %d %d\n", this -> get_name(), this -> get_phone(), this -> get_group());}
 	else printf("Empty\n");
 }
-#define BUF_LEN 128
-int record :: read(FILE* fp) {
-	char buf[BUF_LEN] ;
+
+int record :: read(std::ifstream& fp) {
+	char buf[128] ;
 	int ph = 0;
 	int gr = 0;
-	if (fscanf(fp, "%s %d %d", buf, &ph, &gr) == 3) {
+
+	if (fp >> buf >> ph >> gr) {
 		this -> init(buf, ph, gr);
 		return 1;
-	}
-	else
+	} else {
 		return 0;
+	}
 }
 
 

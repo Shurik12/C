@@ -23,19 +23,22 @@ int main() {
     int res = 0;
 
 	if (!(fp = fopen(file,"r"))) {
-	    printf("Cannot open file\n");
+	    // printf("Cannot open file\n");
+	    cout << "Cannot open file\n";
 	    return -1;
 	}
 	if (!(fp2 = fopen(file2,"r"))) {
 	    fclose(fp);
-	    printf("Cannot open file\n");
+	    // printf("Cannot open file\n");
+	    cout << "Cannot open file\n";
 	    return -1;
 	}
 
 	if (!(l -> read(fp))) {
 		fclose(fp);
 	    fclose(fp2);
-        printf("Cannot read\n");
+        // printf("Cannot read\n");
+        cout << "Cannot read\n";
         return 1;
 	}
 

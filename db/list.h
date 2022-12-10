@@ -1,15 +1,13 @@
 #include "list_node.h"
-#define HASH_VALUE 100
 
-class list
-{
+class list {
    private:
       list_node * head;
       list_node * curr;
 
 	  list_node * tail;
-      list_node * headhashs[HASH_VALUE];
-	  list_node * currhashs[HASH_VALUE];
+      list_node * headhashs[100];
+	  list_node * currhashs[100];
 
       list_node * root_group;
       list_node * root_name;
@@ -30,7 +28,7 @@ class list
 	  list_node * get_tail() { return tail; }
 	  void set_tail(list_node* b) { tail = b; }
 	  void print();
-	  int read(FILE* fp);
+	  int read(std::ifstream& fp);
       int compare_nodes(list_node * , list_node *);
 
       // AVL tree phone :
