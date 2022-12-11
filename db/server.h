@@ -19,5 +19,9 @@
 
 class Server {
     public:
-        
+        int ss;
+        list* l;
+        struct sockaddr_in server_sockaddr {};
+        Server(list* l);
+        ~Server();
 };

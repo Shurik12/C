@@ -5,17 +5,14 @@ using namespace std;
 int main()
 {
     int i, j, k, buff_len = 1024;
-    const char* file = "commands2.txt";
-    ifstream fp ("b.txt");
+    ifstream fp ("commands2.txt");
 
-    /// Define sockfd
     int sock_cli = socket(AF_INET, SOCK_STREAM, 0);
-    /// Define sockaddr_in
-    struct sockaddr_in servaddr;
-    // memset(&servaddr, 0, sizeof(servaddr));
-    servaddr.sin_family = AF_INET;
+    struct sockaddr_in servaddr {};
+    // memset(&servaddr, 0, sizeof(servaddr)); // fill servaddr 0`s
+    servaddr.sin_family = AF_INET; // default value (always)
     servaddr.sin_port = htons(MYPORT);  /// Server Port
-    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");  /// server ip
+    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");  // server ip
 
     //Connect to the server, successfully return 0, error return - 1
     if (connect(sock_cli, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0) {

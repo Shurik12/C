@@ -2,14 +2,27 @@
 
 using namespace std;
 
+Server::Server(list* l) {
+    ss = socket(AF_INET, SOCK_STREAM, 0);
+    this->l = l;
+    server_sockaddr.sin_family = AF_INET; // default value (always)
+    server_sockaddr.sin_port = htons(PORT); // htons - host-to-network
+    server_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY); // fix constant
+}
+Server::~Server() {
+    close(ss);
+    delete l;
+}
+
 int main() {
 
+    struct sockaddr_in client_addr {};
     int conn;
     char buffer[1024];
     ifstream fp ("b.txt");
 
     int res = 0;
-    int ss = socket(AF_INET, SOCK_STREAM, 0);
+    
     list* l = new list();
 
     if (!(fp.is_open())) {
@@ -24,37 +37,23 @@ int main() {
     fp.close();
     cout << "Read from file.\n";
 
-    // printf("%d\n",ss);
-    struct sockaddr_in server_sockaddr, client_addr; // declare structure for server and client
-    server_sockaddr.sin_family = AF_INET;
-    server_sockaddr.sin_port = htons(PORT); // htons - host-to-network
-    server_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    Server server(l);
 
-    if (bind(ss, (struct sockaddr* ) &server_sockaddr, sizeof(server_sockaddr)) == -1) {
+    if (bind(server.ss, (struct sockaddr* ) &server.server_sockaddr, sizeof(server.server_sockaddr)) == -1) {
         perror("bind");
-        delete l;
-        close(conn);
-        close(ss);
         return -3;
     }
-    if(listen(ss, QUEUE) == -1) {
+    if(listen(server.ss, QUEUE) == -1) {
         perror("listen");
-        delete l;
-        close(conn);
-        close(ss);
         return -4;
+    }    
+    if(conn<0) {
+        perror("connect");
+        return -3;
     }
 
     socklen_t length = sizeof(client_addr);
-    /// Successful return of non-negative descriptor, error Return-1
-    conn = accept(ss, (struct sockaddr*) &client_addr, &length);
-    if( conn < 0 ) {
-        perror("connect");
-        delete l;
-        close(conn);
-        close(ss);
-        return -3;
-    }
+    conn = accept(server.ss, (struct sockaddr*) &client_addr, &length);
 
     while (true) {
 
@@ -77,11 +76,8 @@ int main() {
         delete c;
 
         if (res) break;
-        // sprintf(answer, "Command \"%s\" is executed.", buffer);
         send(conn, buffer, len , 0);
     }
-    delete l;
     close(conn);
-    close(ss);
     return 0;
 }
